@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from queue import Queue
 from threading import Thread
 
+# Generate transactions in a csv file
 def generate_transactions(filename="transactions.csv", n=1000000):
     currencies = ["USD", "EUR", "UAH"]
     categories = ["electronics", "food", "books", "clothes"]
@@ -23,23 +24,27 @@ def generate_transactions(filename="transactions.csv", n=1000000):
 
             writer.writerow([user_id, amount, currency, date.date(), category])
 
+# Conversion rates for currencies
 rates = {
     "USD": 1,
     "EUR": 1.1,
     "UAH": 0.025
 }
 
+# Convert transaction to dollar equivalent
 def convert_currency(transaction):
     user_id, amount, currency, date, category = transaction
     amount = float(amount) * rates[currency]
     return [int(user_id), amount, currency, date, category]
 
+# Apply cashback to users with certain ID
 def apply_cashback(transaction):
     user_id, amount, currency, date, category = transaction
     if user_id > 8000:
         amount *= 0.8
     return [user_id, amount, currency, date, category]
 
+# Pipeline processor
 def pipeline_processing(filename="transactions.csv"):
     total = 0
 
@@ -53,6 +58,7 @@ def pipeline_processing(filename="transactions.csv"):
 
     return total
 
+# Producer function
 def producer(filename, queue):
     with open(filename, encoding="utf-8") as f:
         reader = csv.reader(f)
@@ -61,6 +67,7 @@ def producer(filename, queue):
 
     queue.put(None)
 
+# Consumer function
 def consumer(queue, result):
     total = 0
 
@@ -76,6 +83,7 @@ def consumer(queue, result):
 
     result.append(total)
 
+# Function, which coordinates producer-consumer process
 def producer_consumer_processing(filename="transactions.csv"):
     queue = Queue(maxsize=1000)
     result = []
@@ -91,6 +99,7 @@ def producer_consumer_processing(filename="transactions.csv"):
 
     return result[0]
 
+# Calculate time of execution
 def benchmark(func):
     start = time.time()
     result = func()
